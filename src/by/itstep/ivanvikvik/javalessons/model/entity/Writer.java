@@ -3,15 +3,22 @@ package by.itstep.ivanvikvik.javalessons.model.entity;
 public class Writer implements Runnable {
     private Thread thread;
     private String text;
+    private Printer printer;
 
-    public Writer(String text) {
+    public Writer(String text, Printer printer) {
         thread = new Thread(this);
+        this.printer = printer;
         this.text = text;
-        //thread.start();
+        thread.start();
     }
 
     @Override
     public void run() {
-        Printer.print(text);
+        printer.getLock().lock();
+        try {
+            printer.print(text);
+        } finally {
+            printer.getLock().unlock();
+        }
     }
 }
