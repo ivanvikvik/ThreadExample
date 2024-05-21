@@ -1,5 +1,7 @@
 package by.itstep.ivanvikvik.javalessons.model.entity;
 
+import java.util.concurrent.TimeUnit;
+
 public class Writer implements Runnable {
     private Thread thread;
     private String text;
@@ -14,11 +16,23 @@ public class Writer implements Runnable {
 
     @Override
     public void run() {
-        printer.getLock().lock();
-        try {
-            printer.print(text);
-        } finally {
-            printer.getLock().unlock();
+        int number = 0;
+        while(true) {
+            if (printer.getLock().tryLock()) {
+                try {
+                    printer.print(text);
+                    break;
+                } finally {
+                    printer.getLock().unlock();
+                }
+            } else {
+                text += " " + number++;
+                try {
+                    TimeUnit.MICROSECONDS.sleep(1000);
+                } catch (InterruptedException exception) {
+                    System.out.println(exception);
+                }
+            }
         }
     }
 }
